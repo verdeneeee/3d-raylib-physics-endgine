@@ -13,27 +13,20 @@
 #define GLSL_VERSION            100
 #endif
 
-typedef struct {
-	Vector3 position;
-	Vector3 velocity;
-	Vector3 dir;
-	bool isGrounded;
-} Body;
-
-static Body player = { 0 };
-
-void throwCube(bool& isPicked, Vector3& cubeVelosity, Ray& ray, float throwForce, RayCollision& collision);
+void throwCube(bool& isPicked, Vector3& cubeVelosity, Ray& ray, float throwForce, RayCollision& collision, float& deltaTime);
 void pickCube(Camera3D& cam, bool& isPicked, bool& isCubeGrounded, Vector3& cubePos, Vector3& cubeSize, float& pickDist, Ray& ray, RayCollision& collision, Color& cubeCol, Vector3& cubeVelosity, float& gravity, int& cubeMass, float& deltaTime, Vector2& windowSize);
-static void UpdateCameraFPS(Camera* camera, Vector2 lookRotation, Vector2 lean, float headTimer, float walkLerp);
-void UpdateBody(Body* body, float rot, char side, char forward, bool jumpPressed, bool crouchHold, float gravity, float jumpForce, float control, float airDrag, float maxSpeed, float maxAccel, float crouchSpeed, float friction);
+bool checkCollisionPlayerCube(Camera& cam, Vector3& cubePos, Vector3& cubeSize);
 
+bool checkCollisionPlayerRightWall(Camera& cam);
+bool checkCollisionPlayerLeftWall(Camera& cam);
+bool checkCollisionPlayerFrontWall(Camera& cam);
+bool checkCollisionPlayerBackWall(Camera& cam);
 
 int main()
 {
 	SetConfigFlags(FLAG_MSAA_4X_HINT);
-	SetConfigFlags(FLAG_VSYNC_HINT);
-	//SetConfigFlags(FLAG_WINDOW_HIGHDPI);
-	SetConfigFlags(FLAG_WINDOW_UNDECORATED);
+	//SetConfigFlags(FLAG_VSYNC_HINT);
+	SetConfigFlags(FLAG_WINDOW_HIGHDPI);
 	SetConfigFlags(FLAG_WINDOW_HIGHDPI); 
 
 	Vector2 winSize{ 1280, 800 };
@@ -52,25 +45,11 @@ int main()
 	Vector3 cubePos = { 0,0.5,0 };
 	Vector3 cubeSize = { 1, 1, 1 };
 	Vector3 cubeVelosity = { 0.0f,0.0f,0.0f };
-	Vector3 currentSpeed = { 0,0,0 };
-
-	Vector2 lookRotation = { 0 };
-	float headTimer = 0.0f;
-	float walkLerp = 0.0f;
-	float headLerp = 1.0f;
-	Vector2 lean = { 0 };
-	Vector2 sensitivity = { 0.001f, 0.001f };
-
-	float control = 15.0f;
 
 	float friction = 0.86f;
-	float airDrag = 0.98f;
-	float maxAccel = 150.0f;
-	float maxSpeed = 20.0f;
-	float crouchSpeed = 5.0f;
 
-	float gravity = 50.0f;
-	float jumpForce = 15.0f;
+	float gravity = 32.0f;
+	float jumpForce = 12.0f;
 	bool isGrounded = 1;
 
 	const int throwForce = 13;
@@ -82,6 +61,7 @@ int main()
 
 	Ray ray = { 0 };
 	RayCollision collision = { 0 };
+
 
 	Shader shader = LoadShader(TextFormat("raylib/shaders/lighting.vs", GLSL_VERSION),
 					TextFormat("raylib/shaders/lighting.fs", GLSL_VERSION));
@@ -101,18 +81,16 @@ int main()
 		cam.up = { 0,1,0 };
 		float deltaTime = GetFrameTime();
 
-		/*cam.fovy = 90;
+		cam.fovy = 90;
 
 		Vector3 oldCamPos = cam.position;
 
 		SetShaderValue(shader, shader.locs[SHADER_LOC_VECTOR_VIEW], &oldCamPos, SHADER_UNIFORM_VEC3);
 
-		float deltaTime = GetFrameTime();
-
 		Vector2 mouseDelta = GetMouseDelta();
 		Vector3 moveDir = { 0 };
 
-		accelerate = 1.5f;
+		float accelerate = 1.5f;
 
 		if (IsKeyDown(KEY_W))
 		{
@@ -177,43 +155,10 @@ int main()
 			cam.position.y = 0;
 			playerVelosity.y = 0.0f;
 			isGrounded = true;
-		}*/
-
-		Vector2 mouseDelta = GetMouseDelta();
-		lookRotation.x -= mouseDelta.x * sensitivity.x;
-		lookRotation.y += mouseDelta.y * sensitivity.y;
-
-		char sideway = (IsKeyDown(KEY_D) - IsKeyDown(KEY_A));
-		char forward = (IsKeyDown(KEY_W) - IsKeyDown(KEY_S));
-		bool crouching = IsKeyDown(KEY_LEFT_CONTROL);
-		UpdateBody(&player, lookRotation.x, sideway, forward, IsKeyPressed(KEY_SPACE), crouching, gravity, jumpForce, control, airDrag, maxSpeed, maxAccel, crouchSpeed, friction);
-
-		float delta = GetFrameTime();
-		headLerp = Lerp(headLerp, (crouching ? 0.0f : 1.0f), 20.0f * delta);
-		cam.position = {
-			player.position.x,
-			player.position.y + (0.5f + headLerp),
-			player.position.z,
-		};
-
-		if (player.isGrounded && ((forward != 0) || (sideway != 0)))
-		{
-			headTimer += delta * 3.0f;
-			walkLerp = Lerp(walkLerp, 1.0f, 10.0f * delta);
-			cam.fovy = Lerp(cam.fovy, 55.0f, 5.0f * delta);
-		}
-		else
-		{
-			walkLerp = Lerp(walkLerp, 0.0f, 10.0f * delta);
-			cam.fovy = Lerp(cam.fovy, 60.0f, 5.0f * delta);
 		}
 
-		lean.x = Lerp(lean.x, sideway * 0.02f, 10.0f * delta);
-		lean.y = Lerp(lean.y, forward * 0.015f, 10.0f * delta);
-
-		UpdateCameraFPS(&cam, lookRotation, lean, headTimer, walkLerp);
-
-		throwCube(isPicked, cubeVelosity, ray, throwForce, collision);
+		
+		throwCube(isPicked, cubeVelosity, ray, throwForce, collision, deltaTime);
 		pickCube(cam, isPicked, isCubeGrounded, cubePos, cubeSize, pickDist, ray, collision, cubeCol, cubeVelosity, gravity, cubeMass, deltaTime, winSize);
 
 		Vector3 nextPos = Vector3Add(cam.position, playerVelosity);
@@ -225,22 +170,20 @@ int main()
 
 		cam.target.y += playerVelosity.y * deltaTime;
 
-
-		/*if (CheckCollisionBoxes({ { cam.position.x - 0.1f / 2.0f, cam.position.y - 2.0f / 2.0f, cam.position.z - 0.1f / 2.0f}, {cam.position.x + 0.1f / 2.0f, cam.position.y + 2.0f / 2.0f, cam.position.z + 0.1f / 2.0f,} }, { { cubePos.x - cubeSize.x / 2, cubePos.y - cubeSize.y / 2, cubePos.z - cubeSize.z / 2}, {cubePos.x + cubeSize.x / 2, cubePos.y + cubeSize.y / 2, cubePos.z + cubeSize.z / 2} }))
+		if (checkCollisionPlayerCube(cam, cubePos, cubeSize))
 		{
-
 			Vector3 surfPos = cam.position;
 			cam.position = oldCamPos;
 
 			cam.position.x = surfPos.x;
-			if (CheckCollisionBoxes({ { cam.position.x - 0.1f / 2.0f, cam.position.y - 2.0f / 2.0f, cam.position.z - 0.1f / 2.0f}, {cam.position.x + 0.1f / 2.0f, cam.position.y + 2.0f / 2.0f, cam.position.z + 0.1f / 2.0f,} }, { { cubePos.x - cubeSize.x / 2, cubePos.y - cubeSize.y / 2, cubePos.z - cubeSize.z / 2}, {cubePos.x + cubeSize.x / 2, cubePos.y + cubeSize.y / 2, cubePos.z + cubeSize.z / 2} })) 
+			if (checkCollisionPlayerCube(cam, cubePos, cubeSize))
 			{
 				playerVelosity.x = 0;
 				cam.position.x = oldCamPos.x;
 			}
 
 			cam.position.y = surfPos.y;
-			if (CheckCollisionBoxes({ { cam.position.x - 0.1f / 2.0f, cam.position.y - 2.0f / 2.0f, cam.position.z - 0.1f / 2.0f}, {cam.position.x + 0.1f / 2.0f, cam.position.y + 2.0f / 2.0f, cam.position.z + 0.1f / 2.0f,} }, { { cubePos.x - cubeSize.x / 2, cubePos.y - cubeSize.y / 2, cubePos.z - cubeSize.z / 2}, {cubePos.x + cubeSize.x / 2, cubePos.y + cubeSize.y / 2, cubePos.z + cubeSize.z / 2} }))
+			if (checkCollisionPlayerCube(cam, cubePos, cubeSize))
 			{
 				isGrounded = 1;
 				playerVelosity.y = 0;
@@ -248,13 +191,124 @@ int main()
 			}
 
 			cam.position.z = surfPos.z;
-			if (CheckCollisionBoxes({ { cam.position.x - 0.1f / 2.0f, cam.position.y - 2.0f / 2.0f, cam.position.z - 0.1f / 2.0f}, {cam.position.x + 0.1f / 2.0f, cam.position.y + 2.0f / 2.0f, cam.position.z + 0.1f / 2.0f,} }, { { cubePos.x - cubeSize.x / 2, cubePos.y - cubeSize.y / 2, cubePos.z - cubeSize.z / 2}, {cubePos.x + cubeSize.x / 2, cubePos.y + cubeSize.y / 2, cubePos.z + cubeSize.z / 2} }))
+			if (checkCollisionPlayerCube(cam, cubePos, cubeSize))
 			{
 				playerVelosity.z = 0;
 				cam.position.z = oldCamPos.z;
 			}
-		}*/
+		}
 
+		if (checkCollisionPlayerRightWall(cam))
+		{
+			Vector3 surfPos = cam.position;
+			cam.position = oldCamPos;
+
+			cam.position.x = surfPos.x;
+			if (checkCollisionPlayerRightWall(cam))
+			{
+				playerVelosity.x = 0;
+				cam.position.x = oldCamPos.x;
+			}
+
+			cam.position.y = surfPos.y;
+			if (checkCollisionPlayerRightWall(cam))
+			{
+				isGrounded = 1;
+				playerVelosity.y = 0;
+				cam.position.y = oldCamPos.y; 
+			}
+
+			cam.position.z = surfPos.z;
+			if (checkCollisionPlayerRightWall(cam))
+			{ 
+				playerVelosity.z = 0;
+				cam.position.z = oldCamPos.z;
+			}
+		}
+
+		if (checkCollisionPlayerLeftWall(cam))
+		{
+			Vector3 surfPos = cam.position; 
+			cam.position = oldCamPos;
+
+			cam.position.x = surfPos.x;
+			if (checkCollisionPlayerLeftWall(cam)) 
+			{
+				playerVelosity.x = 0;
+				cam.position.x = oldCamPos.x;
+			}
+
+			cam.position.y = surfPos.y;
+			if (checkCollisionPlayerLeftWall(cam)) 
+			{
+				isGrounded = 1;
+				playerVelosity.y = 0; 
+				cam.position.y = oldCamPos.y; 
+			}
+
+			cam.position.z = surfPos.z;
+			if (checkCollisionPlayerLeftWall(cam)) 
+			{ 
+				playerVelosity.z = 0;
+				cam.position.z = oldCamPos.z;
+			}
+		}
+
+		if (checkCollisionPlayerFrontWall(cam))
+		{
+			Vector3 surfPos = cam.position;
+			cam.position = oldCamPos;
+
+			cam.position.x = surfPos.x;
+			if (checkCollisionPlayerFrontWall(cam)) 
+			{ 
+				playerVelosity.x = 0;
+				cam.position.x = oldCamPos.x;
+			}
+
+			cam.position.y = surfPos.y;
+			if (checkCollisionPlayerFrontWall(cam)) 
+			{
+				isGrounded = 1;
+				playerVelosity.y = 0;
+				cam.position.y = oldCamPos.y;
+			}
+
+			cam.position.z = surfPos.z;
+			if (checkCollisionPlayerFrontWall(cam)) 
+			{ 
+				playerVelosity.z = 0;
+				cam.position.z = oldCamPos.z; 
+			}
+		}
+
+		if (checkCollisionPlayerBackWall(cam))
+		{
+			Vector3 surfPos = cam.position; 
+			cam.position = oldCamPos;
+
+			cam.position.x = surfPos.x;
+			if (checkCollisionPlayerBackWall(cam)) 
+			{ 
+				playerVelosity.x = 0; 
+				cam.position.x = oldCamPos.x;
+			}
+
+			cam.position.y = surfPos.y;
+			if (checkCollisionPlayerBackWall(cam)) 
+			{
+				isGrounded = 1;
+				playerVelosity.y = 0; 
+				cam.position.y = oldCamPos.y; 
+			}
+
+			cam.position.z = surfPos.z;
+			if (checkCollisionPlayerBackWall(cam)) 
+			{ 
+				playerVelosity.z = 0;
+				cam.position.z = oldCamPos.z;
+			}
+		}
 
 		BeginDrawing();	
 		BeginMode3D(cam);
@@ -264,13 +318,14 @@ int main()
 		
 		DrawCube(cubePos, cubeSize.x, cubeSize.y, cubeSize.z, cubeCol);
 
-		DrawPlane({ 0,-1,0 }, { 30,30 }, DARKGRAY);
 
-		DrawCube({ 0.0f, 1, -25.0f }, 10.0f, 4.0f, 0.1f, DARKGREEN);
-		DrawCube({ 0.0f, 1,  25.0f }, 10.0f, 4.0f, 0.1f, DARKGREEN);
+		DrawPlane({ 0,-1,0 }, { 10,10 }, DARKGRAY);
 
-		DrawCube({ -25.0f, 1, 0.0f }, 0.1f, 4.0f, 10.0f, DARKGREEN);
-		DrawCube({ 25.0f, 1, 0.0f }, 0.1f, 4.0f, 10.0f, DARKGREEN);
+		DrawCube({ 0.0f, 1, -5.0f }, 10.0f, 4.0f, 0.1f, DARKGREEN);
+		DrawCube({ 0.0f, 1,  5.0f }, 10.0f, 4.0f, 0.1f, DARKGREEN);
+
+		DrawCube({ -5.0f, 1, 0.0f }, 0.1f, 4.0f, 10.0f, DARKGREEN);
+		DrawCube({ 5.0f, 1, 0.0f }, 0.1f, 4.0f, 10.0f, DARKGREEN);
 
 		EndShaderMode();
 
@@ -286,7 +341,7 @@ int main()
 	return 0;
 }
 
-void throwCube(bool& isPicked, Vector3& cubeVelosity, Ray& ray, float throwForce, RayCollision &collision)
+void throwCube(bool& isPicked, Vector3& cubeVelosity, Ray& ray, float throwForce, RayCollision &collision, float &deltaTime)
 {
 	if (IsKeyPressed(KEY_E) && isPicked)
 	{
@@ -368,108 +423,47 @@ void pickCube(Camera3D& cam, bool& isPicked, bool& isCubeGrounded, Vector3& cube
 	else isPicked = 0;
 }
 
-static void UpdateCameraFPS(Camera* camera, Vector2 lookRotation, Vector2 lean, float headTimer, float walkLerp)
+bool checkCollisionPlayerCube(Camera &cam, Vector3 &cubePos, Vector3 &cubeSize)
 {
-	const Vector3 up = { 0.0f, 1.0f, 0.0f };
-	const Vector3 targetOffset = { 0.0f, 0.0f, -1.0f };
-
-	// Left and right
-	Vector3 yaw = Vector3RotateByAxisAngle(targetOffset, up, lookRotation.x);
-
-	// Clamp view up
-	float maxAngleUp = Vector3Angle(up, yaw);
-	maxAngleUp -= 0.001f; // Avoid numerical errors
-	if (-(lookRotation.y) > maxAngleUp) { lookRotation.y = -maxAngleUp; }
-
-	// Clamp view down
-	float maxAngleDown = Vector3Angle(Vector3Negate(up), yaw);
-	maxAngleDown *= -1.0f; // Downwards angle is negative
-	maxAngleDown += 0.001f; // Avoid numerical errors
-	if (-(lookRotation.y) < maxAngleDown) { lookRotation.y = -maxAngleDown; }
-
-	// Up and down
-	Vector3 right = Vector3Normalize(Vector3CrossProduct(yaw, up));
-	
-	// Rotate view vector around right axis
-	float pitchAngle = -lookRotation.y - lean.y;
-	pitchAngle = Clamp(pitchAngle, -PI / 2 + 0.0001f, PI / 2 - 0.0001f); // Clamp angle so it doesn't go past straight up or straight down
-	Vector3 pitch = Vector3RotateByAxisAngle(yaw, right, pitchAngle);
-
-	// Head animation
-	// Rotate up direction around forward axis
-	float headSin = sinf(headTimer * PI);
-	float headCos = cosf(headTimer * PI);
-	const float stepRotation = 0.01f;
-	camera->up = Vector3RotateByAxisAngle(up, pitch, headSin * stepRotation + lean.x);
-
-	// Camera BOB
-	const float bobSide = 0.1f;
-	const float bobUp = 0.15f;
-	Vector3 bobbing = Vector3Scale(right, headSin * bobSide);
-	bobbing.y = fabsf(headCos * bobUp);
-
-	camera->position = Vector3Add(camera->position, Vector3Scale(bobbing, walkLerp));
-	camera->target = Vector3Add(camera->position, pitch);
+	if (CheckCollisionBoxes({ { cam.position.x - 0.1f / 2.0f, cam.position.y - 2.0f / 2.0f, cam.position.z - 0.1f / 2.0f}, {cam.position.x + 0.1f / 2.0f, cam.position.y + 2.0f / 2.0f, cam.position.z + 0.1f / 2.0f,} }, { { cubePos.x - cubeSize.x / 2, cubePos.y - cubeSize.y / 2, cubePos.z - cubeSize.z / 2}, {cubePos.x + cubeSize.x / 2, cubePos.y + cubeSize.y / 2, cubePos.z + cubeSize.z / 2} }))
+	{
+		return true;
+	}
+	return false;
 }
 
-void UpdateBody(Body* body, float rot, char side, char forward, bool jumpPressed, bool crouchHold, float gravity, float jumpForce, float control, float airDrag, float maxSpeed, float maxAccel, float crouchSpeed, float friction)
+bool checkCollisionPlayerRightWall(Camera& cam)
 {
-	Vector2 input = { (float)side, (float)-forward };
-
-#if defined(NORMALIZE_INPUT)
-	// Slow down diagonal movement
-	if ((side != 0) && (forward != 0)) input = Vector2Normalize(input);
-#endif
-
-	float delta = GetFrameTime();
-
-	if (!body->isGrounded) body->velocity.y -= gravity * delta;
-
-	if (body->isGrounded && jumpPressed)
+	if (CheckCollisionBoxes({ { cam.position.x - 0.05f, cam.position.y - 1.0f, cam.position.z - 0.05f}, {cam.position.x + 0.05f, cam.position.y + 1.0f, cam.position.z + 0.05f} }, { { -5.0f, -1.0f, -5.05f }, { 5.0f, 3.0f, -4.95f } }))
 	{
-		body->velocity.y = jumpForce;
-		body->isGrounded = false;
-
-		// Sound can be played at this moment
-		//SetSoundPitch(fxJump, 1.0f + (GetRandomValue(-100, 100)*0.001));
-		//PlaySound(fxJump);
+		return true;
 	}
+	return false;
+}
 
-	Vector3 front = { sinf(rot), 0.f, cosf(rot) };
-	Vector3 right = { cosf(-rot), 0.f, sinf(-rot) };
-
-	Vector3 desiredDir = { input.x * right.x + input.y * front.x, 0.0f, input.x * right.z + input.y * front.z, };
-	body->dir = Vector3Lerp(body->dir, desiredDir, control * delta);
-
-	float decel = (body->isGrounded ? friction : airDrag);
-	Vector3 hvel = { body->velocity.x * decel, 0.0f, body->velocity.z * decel };
-
-	float hvelLength = Vector3Length(hvel); // Magnitude
-	if (hvelLength < (maxSpeed * 0.01f)) hvel = { 0 };
-
-	// This is what creates strafing
-	float speed = Vector3DotProduct(hvel, body->dir);
-
-	// Whenever the amount of acceleration to add is clamped by the maximum acceleration constant,
-	// a Player can make the speed faster by bringing the direction closer to horizontal velocity angle
-	// More info here: https://youtu.be/v3zT3Z5apaM?t=165
-	maxSpeed = (crouchHold ? crouchSpeed: maxSpeed);
-	float accel = Clamp(maxSpeed - speed, 0.f, maxAccel * delta);
-	hvel.x += body->dir.x * accel;
-	hvel.z += body->dir.z * accel;
-
-	body->velocity.x = hvel.x;
-	body->velocity.z = hvel.z;
-
-	body->position.x += body->velocity.x * delta;
-	body->position.y += body->velocity.y * delta;
-	body->position.z += body->velocity.z * delta;
-
-	// Fancy collision system against the floor
-	if (body->position.y <= 0.0f)
+bool checkCollisionPlayerLeftWall(Camera& cam)
+{
+	if (CheckCollisionBoxes({ { cam.position.x - 0.05f, cam.position.y - 1.0f, cam.position.z - 0.05f}, {cam.position.x + 0.05f, cam.position.y + 1.0f, cam.position.z + 0.05f} }, { { -5.0f, -1.0f, 4.95f }, { 5.0f, 3.0f, 5.05f } }))
 	{
-		body->position.y = 0.0f;
-		body->velocity.y = 0.0f;
-		body->isGrounded = true; // Enable jumping
+		return true;
 	}
+	return false;
+}
+
+bool checkCollisionPlayerFrontWall(Camera& cam)
+{
+	if (CheckCollisionBoxes({ { cam.position.x - 0.05f, cam.position.y - 1.0f, cam.position.z - 0.05f}, {cam.position.x + 0.05f, cam.position.y + 1.0f, cam.position.z + 0.05f} }, { { -5.05f, -1.0f, -5.0f }, { -4.95f, 3.0f, 5.0f } }))
+	{
+		return true;
+	}
+	return false;
+}
+
+bool checkCollisionPlayerBackWall(Camera& cam)
+{
+	if (CheckCollisionBoxes({ { cam.position.x - 0.05f, cam.position.y - 1.0f, cam.position.z - 0.05f}, {cam.position.x + 0.05f, cam.position.y + 1.0f, cam.position.z + 0.05f} }, { { 4.95f, -1.0f, -5.0f }, { 5.05f, 3.0f, 5.0f } }))
+	{
+		return true;
+	}
+	return false;
 }
