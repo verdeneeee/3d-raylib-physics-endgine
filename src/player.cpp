@@ -38,25 +38,13 @@ void Player::movemant(World& world, float deltaTime)
 
 	cam.target.y += velocity.y * deltaTime;
 
-	if(IsKeyDown(KEY_W))
-	{
-		velocity.x += world.accelerate * deltaTime;
-	}
+	if(IsKeyDown(KEY_W)) velocity.x += world.accelerate * deltaTime;
 
-	if (IsKeyDown(KEY_S))
-	{
-		velocity.x -= world.accelerate * deltaTime;
-	}
+	if (IsKeyDown(KEY_S)) velocity.x -= world.accelerate * deltaTime;
 
-	if (IsKeyDown(KEY_D))
-	{
-		velocity.z += world.accelerate * deltaTime;
-	}
+	if (IsKeyDown(KEY_D)) velocity.z += world.accelerate * deltaTime;
 
-	if (IsKeyDown(KEY_A))
-	{
-		velocity.z -= world.accelerate * deltaTime;
-	}
+	if (IsKeyDown(KEY_A)) velocity.z -= world.accelerate * deltaTime;
 
 	velocity.x *= world.friction;
 	velocity.z *= world.friction;
