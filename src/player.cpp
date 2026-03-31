@@ -5,7 +5,7 @@
 Player::Player(Vector3 startPos) : velocity{ 0, 0, 0 }, isGrounded(true), maxSpeed(0.5f) {
 	cam.fovy = 90;
 	cam.position = startPos;
-	cam.target = { 0, 0, 0 };
+	cam.target = { 0, 1, 0 };
 	cam.projection = CAMERA_PERSPECTIVE;
 	cam.up = { 0, 1, 0 };
 }
@@ -38,12 +38,9 @@ void Player::movemant(World& world, float deltaTime)
 
 	cam.target.y += velocity.y * deltaTime;
 
-	if(IsKeyDown(KEY_W)) velocity.x += world.accelerate * deltaTime;
-
+	if (IsKeyDown(KEY_W)) velocity.x += world.accelerate * deltaTime;
 	if (IsKeyDown(KEY_S)) velocity.x -= world.accelerate * deltaTime;
-
 	if (IsKeyDown(KEY_D)) velocity.z += world.accelerate * deltaTime;
-
 	if (IsKeyDown(KEY_A)) velocity.z -= world.accelerate * deltaTime;
 
 	velocity.x *= world.friction;
@@ -56,4 +53,11 @@ void Player::movemant(World& world, float deltaTime)
 
 	cam.position.x += velocity.x * deltaTime;
 	cam.position.z += velocity.z * deltaTime;
+
+	float playerRadius = 0.3f;
+
+	if (cam.position.x + playerRadius > 5.0f) cam.position.x = 5.0f - playerRadius;
+	if (cam.position.x - playerRadius < -5.0f) cam.position.x = -5.0f + playerRadius;
+	if (cam.position.z + playerRadius > 5.0f) cam.position.z = 5.0f - playerRadius;
+	if (cam.position.z - playerRadius < -5.0f) cam.position.z = -5.0f + playerRadius;
 }
