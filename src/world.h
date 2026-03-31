@@ -8,7 +8,7 @@ struct World
 	float gravity = 32.0f;
 	float jumpForce = 12.0f;
 	const int throwForce = 13;
-	float pickDist = 0.0f;
+	float pickDist = 2.5f;
 	float accelerate = 1.5f;
 	
 	void drawWorld(std::vector<Vector3> walls);
