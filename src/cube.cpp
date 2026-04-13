@@ -3,7 +3,7 @@
 
 Cube::Cube(Vector3 position, Vector3 size)
 	: position(position), size(size), velocity{ 0, 0, 0 },
-	isPicked(false), isGrounded(false), mass(5.0f), color(WHITE), wallDist(5.0f)
+	isPicked(false), isGrounded(false), mass(5.0f), color(WHITE)
 {
 	collision.hit = false;
 	collision.distance = 0;
