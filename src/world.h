@@ -10,6 +10,7 @@ struct World
 	const int throwForce = 13;
 	float pickDist = 2.5f;
 	float accelerate = 1.5f;
-	
+	float wallDist = 5.0f;
+
 	void drawWorld(std::vector<Vector3> walls);
 };
