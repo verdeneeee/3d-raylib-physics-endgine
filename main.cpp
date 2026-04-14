@@ -7,8 +7,7 @@
 
 int main()
 {
-    SetConfigFlags(FLAG_MSAA_4X_HINT);
-    SetConfigFlags(FLAG_VSYNC_HINT);
+    SetConfigFlags(FLAG_VSYNC_HINT | FLAG_MSAA_4X_HINT | FLAG_WINDOW_HIGHDPI);
 
     InitWindow(1600, 900, "Hello world");
 
@@ -16,6 +15,7 @@ int main()
     DisableCursor();
 
     RenderTexture2D target = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
+    RenderTexture2D fxaaTexture = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
 
     Shader shaders[6];
     shaders[0] = LoadShader(0, "raylib/shaders/posterization.fs");
@@ -28,11 +28,13 @@ int main()
     int currentShader = 0;
     int shaderCount = 6;
 
+    Shader fxaaShader = LoadShader(0, "raylib/shaders/fxaa.fs");
+
     World world;
     Player player({ 3, 1, 0 });
     Cube cube({ 0.0f, 0.5f, 0.0f }, { 1.0f, 1.0f, 1.0f });
 
-    std::vector <Vector3> walls = 
+    std::vector <Vector3> walls =
     {
         { 0.0f, 1, world.wallDist },
         { 0.0f, 1, -world.wallDist },
@@ -54,6 +56,7 @@ int main()
         player.movemant(world, deltaTime);
         player.jump(world, deltaTime);
 
+
         BeginTextureMode(target);
         ClearBackground(SKYBLUE);
 
@@ -66,16 +69,29 @@ int main()
 
         EndTextureMode();
 
-        BeginDrawing();
+        BeginTextureMode(fxaaTexture); 
         ClearBackground(BLACK);
         BeginShaderMode(shaders[currentShader]);
 
         DrawTextureRec(target.texture, { 0, 0, (float)target.texture.width, (float)-target.texture.height }, { 0, 0 }, WHITE);
+        
+        EndShaderMode();
+        EndTextureMode();
+
+        BeginDrawing();
+        ClearBackground(BLACK);
+        BeginShaderMode(fxaaShader);
+
+        float resolution[2] = { (float)GetScreenWidth(), (float)GetScreenHeight() };
+        SetShaderValue(fxaaShader, GetShaderLocation(fxaaShader, "resolution"), resolution, SHADER_UNIFORM_VEC2);
+
+        DrawTextureRec(fxaaTexture.texture, { 0, 0, (float)fxaaTexture.texture.width, (float)-fxaaTexture.texture.height }, { 0, 0 }, WHITE);
 
         EndShaderMode();
 
         DrawFPS(10, 10);
         DrawText(".", GetScreenWidth() / 2, GetScreenHeight() / 2 - 11, 16, WHITE);
+
         EndDrawing();
     }
 
