@@ -3,7 +3,7 @@
 
 Cube::Cube(Vector3 position, Vector3 size)
 	: position(position), size(size), velocity{ 0, 0, 0 },
-	isPicked(false), isGrounded(false), mass(5.0f), color(WHITE)
+	isPicked(false), isGrounded(false), mass(5.0f)
 {
 	collision.hit = false;
 	collision.distance = 0;
@@ -17,7 +17,7 @@ void Cube::Pick(const Player& player, World& world, float deltaTime)
 	{
 		if (!collision.hit)
 		{
-			ray = GetScreenToWorldRay({ (float)GetScreenWidth() / 2, (float)GetScreenHeight() / 2}, player.cam);
+			ray = GetScreenToWorldRay({ (float)GetScreenWidth() / 2, (float)GetScreenHeight() / 2 }, player.cam);
 
 			collision = GetRayCollisionBox(ray,
 				{ { position.x - size.x / 2, position.y - size.y / 2, position.z - size.z / 2},
@@ -28,7 +28,7 @@ void Cube::Pick(const Player& player, World& world, float deltaTime)
 
 	if (isPicked)
 	{
-		ray = GetScreenToWorldRay({ 1280 / 2, 800 / 2 }, player.cam);
+		ray = GetScreenToWorldRay({ (float)GetScreenWidth() / 2, (float)GetScreenHeight() / 2 }, player.cam);
 		//color = LIME;
 
 		velocity = { 0,0,0 };
@@ -64,10 +64,10 @@ void Cube::Physics(World& world, float deltaTime)
 		position.y += velocity.y * deltaTime;
 		position.z += velocity.z * deltaTime;
 
-		if (position.x + size.x / 2.0f > wallDist) { position.x = wallDist - size.x / 2.0f; velocity.x *= -0.2f; }
-		if (position.x - size.x / 2.0f < -wallDist) { position.x = -wallDist + size.x / 2.0f; velocity.x *= -0.2f; }
-		if (position.z + size.x / 2.0f > wallDist) { position.z = wallDist - size.x / 2.0f; velocity.z *= -0.2f; }
-		if (position.z - size.x / 2.0f < -wallDist) { position.z = -wallDist + size.x / 2.0f; velocity.z *= -0.2f; }
+		if (position.x + size.x / 2.0f > world.wallDist) { position.x = world.wallDist - size.x / 2.0f; velocity.x *= -0.2f; }
+		if (position.x - size.x / 2.0f < -world.wallDist) { position.x = -world.wallDist + size.x / 2.0f; velocity.x *= -0.2f; }
+		if (position.z + size.x / 2.0f > world.wallDist) { position.z = world.wallDist - size.x / 2.0f; velocity.z *= -0.2f; }
+		if (position.z - size.x / 2.0f < -world.wallDist) { position.z = -world.wallDist + size.x / 2.0f; velocity.z *= -0.2f; }
 	}
 	if (position.y < -0.5)
 	{
