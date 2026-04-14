@@ -15,8 +15,6 @@ struct Cube
 	bool isPicked;
 	bool isGrounded;
 	Color color = WHITE;
-	float wallDist = 5.0f;
-
 
 	Cube(Vector3 position, Vector3 size);
 
