@@ -7,9 +7,9 @@
 
 ## Features
 
-- ⚡ **Physics** – gravity, simple friction
-- 🔍 **FXAA** – post-processing shader for anti-aliasing
-- 🖱️ **Interactive** – move/throw objects with mouse/keyboard
+- **Physics** – gravity, simple friction
+- **FXAA** – post-processing shader for anti-aliasing
+- **Interactive** – move/throw objects with mouse/keyboard
 
 ## Installation & Build
 
