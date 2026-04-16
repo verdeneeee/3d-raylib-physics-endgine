@@ -5,8 +5,6 @@
 
 **3D Physics Engine** built with [raylib](https://www.raylib.com/). Implements basic rigid body dynamics, collision detection, and FXAA post-processing for anti-aliasing.
 
-![Demo](https://via.placeholder.com/800x400?text=Add+screenshot+here)
-
 ## Features
 
 - ⚡ **Physics** – gravity, simple friction
