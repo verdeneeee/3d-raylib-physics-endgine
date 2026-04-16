@@ -16,7 +16,6 @@
 ### Requirements
 
 - C99 compiler (GCC, Clang, MSVC)
-- [CMake](https://cmake.org/) (3.16+)
 - [raylib](https://github.com/raysan5/raylib) library (fetched automatically)
 
 ### Build from source
