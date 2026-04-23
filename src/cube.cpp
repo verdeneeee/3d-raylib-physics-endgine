@@ -1,4 +1,3 @@
-#include "../raylib/include/raylib.h"
 #include "cube.h"
 
 Cube::Cube(Vector3 position, Vector3 size)
@@ -88,5 +87,16 @@ void Cube::Throw(const Player& player, World& world, float deltaTime)
 		velocity.x = ray.direction.x * world.throwForce;
 		velocity.y = ray.direction.y * world.throwForce;
 		velocity.z = ray.direction.z * world.throwForce;
+	}
+}
+
+void Cube::update(const Player& player, World& world, float deltaTime)
+{
+	Pick(player, world, deltaTime);
+	Throw(player, world, deltaTime);
+
+	if (!isPicked)
+	{
+		Physics(world, deltaTime);
 	}
 }
