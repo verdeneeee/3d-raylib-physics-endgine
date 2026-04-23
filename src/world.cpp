@@ -1,6 +1,5 @@
 #include "world.h"
 
-
 void World::drawWorld(std::vector <Vector3> walls)
 {
     DrawPlane({ 0, -1, 0 }, { 20, 20 }, DARKGRAY);
