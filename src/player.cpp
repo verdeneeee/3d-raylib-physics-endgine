@@ -1,6 +1,5 @@
 #include "player.h"
 #include "world.h"
-#include "../raylib/include/raylib.h"
 
 Player::Player(Vector3 startPos) : velocity{ 0, 0, 0 }, isGrounded(true), maxSpeed(0.5f) {
 	cam.fovy = 90;
@@ -60,4 +59,10 @@ void Player::movemant(World& world, float deltaTime)
 	if (cam.position.x - playerRadius < -5.0f) cam.position.x = -5.0f + playerRadius;
 	if (cam.position.z + playerRadius > 5.0f) cam.position.z = 5.0f - playerRadius;
 	if (cam.position.z - playerRadius < -5.0f) cam.position.z = -5.0f + playerRadius;
+}
+
+void Player::update(World& world, float deltaTime)
+{
+	jump(world, deltaTime);
+	movemant(world, deltaTime);
 }
