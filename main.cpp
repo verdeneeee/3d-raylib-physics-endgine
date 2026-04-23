@@ -1,7 +1,4 @@
-#include "raylib/include/raylib.h"
-#include "src/cube.h"
-#include "src/player.h"
-#include "src/world.h"
+#include "dependensis.h"
 
 #include <vector>
 
@@ -29,7 +26,7 @@ int main()
     int shaderCount = 6;
 
     Shader fxaaShader = LoadShader(0, "raylib/shaders/fxaa.fs");
-
+    
     World world;
     Player player({ 3, 1, 0 });
     Cube cube({ 0.0f, 0.5f, 0.0f }, { 1.0f, 1.0f, 1.0f });
@@ -49,12 +46,8 @@ int main()
 
         float deltaTime = GetFrameTime();
 
-        cube.Physics(world, deltaTime);
-        cube.Throw(player, world, deltaTime);
-        cube.Pick(player, world, deltaTime);
-
-        player.movemant(world, deltaTime);
-        player.jump(world, deltaTime);
+        cube.update(player, world, deltaTime);
+        player.update(world, deltaTime);
 
 
         BeginTextureMode(target);
@@ -70,7 +63,6 @@ int main()
         EndTextureMode();
 
         BeginTextureMode(fxaaTexture); 
-        ClearBackground(BLACK);
         BeginShaderMode(shaders[currentShader]);
 
         DrawTextureRec(target.texture, { 0, 0, (float)target.texture.width, (float)-target.texture.height }, { 0, 0 }, WHITE);
@@ -79,7 +71,6 @@ int main()
         EndTextureMode();
 
         BeginDrawing();
-        ClearBackground(BLACK);
         BeginShaderMode(fxaaShader);
 
         float resolution[2] = { (float)GetScreenWidth(), (float)GetScreenHeight() };
