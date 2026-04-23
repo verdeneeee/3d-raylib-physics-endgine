@@ -1,5 +1,4 @@
 #pragma once
-#include "../raylib/include/raylib.h"
 #include "player.h"
 #include "world.h"
 
@@ -21,6 +20,7 @@ struct Cube
 	void Pick(const Player& player, World& world, float deltaTime);
 	void Throw(const Player& player, World& world, float deltaTime);
 	void Physics(World&world, float deltaTime);
+	void update(const Player& player, World& world, float deltaTime);
 
 private:
 	RayCollision collision;
