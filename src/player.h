@@ -1,5 +1,4 @@
 #pragma once
-#include "../raylib/include/raylib.h"
 #include "world.h"
 
 struct Player
@@ -14,4 +13,5 @@ struct Player
 
 	void jump(const World& world, float deltaTime);
 	void movemant(World& world, float deltaTime);
+	void update(World& world, float deltaTime);
 };
