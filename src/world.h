@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include "../raylib/include/raylib.h"
 
 struct World
 {
