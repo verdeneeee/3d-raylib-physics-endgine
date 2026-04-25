@@ -55,10 +55,10 @@ void Player::movemant(World& world, float deltaTime)
 
 	float playerRadius = 0.3f;
 
-	if (cam.position.x + playerRadius > 5.0f) cam.position.x = 5.0f - playerRadius;
-	if (cam.position.x - playerRadius < -5.0f) cam.position.x = -5.0f + playerRadius;
-	if (cam.position.z + playerRadius > 5.0f) cam.position.z = 5.0f - playerRadius;
-	if (cam.position.z - playerRadius < -5.0f) cam.position.z = -5.0f + playerRadius;
+	if (cam.position.x + playerRadius > world.wallDist) cam.position.x = world.wallDist - playerRadius;
+	if (cam.position.x - playerRadius < -world.wallDist) cam.position.x = -world.wallDist + playerRadius;
+	if (cam.position.z + playerRadius > world.wallDist) cam.position.z = world.wallDist - playerRadius;
+	if (cam.position.z - playerRadius < -world.wallDist) cam.position.z = -world.wallDist + playerRadius;
 }
 
 void Player::update(World& world, float deltaTime)
