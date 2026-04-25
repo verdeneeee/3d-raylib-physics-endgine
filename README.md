@@ -18,17 +18,6 @@
 - C99 compiler (GCC, Clang, MSVC)
 - [raylib](https://github.com/raysan5/raylib) library (fetched automatically)
 
-### Build
-
-```bash
-# Clone the repository
-git clone https://github.com/verdeneeee/3d-raylib-physics-endgine.git
-cd 3d-raylib-physics-endgine
-
-g++ main.cpp -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -o engine
-./engine
-```
-
 ## Technologies Used
 
 - **Language**: C99 with some C++ modules
