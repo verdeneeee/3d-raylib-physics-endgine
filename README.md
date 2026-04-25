@@ -31,8 +31,8 @@ g++ main.cpp -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -o engine
 
 ## Technologies Used
 
-- **Language** - : C99 with some C++ modules
+- **Language**: C99 with some C++ modules
 
-- **Graphics** - : raylib (OpenGL 3.3+)
+- **Graphics**: raylib (OpenGL 3.3+)
 
-- **Shaders** - : GLSL (FXAA post-effect)
+- **Shaders**: GLSL (FXAA post-effect)
