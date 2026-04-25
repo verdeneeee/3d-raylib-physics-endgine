@@ -11,8 +11,6 @@
 - **FXAA** – post-processing shader for anti-aliasing
 - **Interactive** – move/throw objects with mouse/keyboard
 
-## Installation & Build
-
 ### Requirements
 
 - C99 compiler (GCC, Clang, MSVC)
