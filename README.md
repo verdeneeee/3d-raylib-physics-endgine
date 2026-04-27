@@ -1,7 +1,7 @@
 # 3D Raylib Physics Engine
 
 [![Language: C](https://img.shields.io/badge/C-99-blue)](https://en.wikipedia.org/wiki/C99)
-[![Library: raylib](https://img.shields.io/badge/raylib-5.5-green)](https://www.raylib.com/)
+[![Library: raylib](https://img.shields.io/badge/raylib-5.5-green)](https://github.com/raysan5/raylib)
 
 **3D Physics Engine** built with [raylib](https://www.raylib.com/). Implements basic rigid body dynamics, collision detection, and FXAA post-processing for anti-aliasing.
 
