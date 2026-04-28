@@ -12,17 +12,17 @@ Game::Game() : player({ 3, 1, 0 }), cube({ 0.0f, 0.5f, 0.0f }, { 1.0f, 1.0f, 1.0
     target = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
     fxaaTexture = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
 
-    shaders[0] = LoadShader(0, "raylib/shaders/posterization.fs");
-    shaders[1] = LoadShader(0, "raylib/shaders/grayscale.fs");
-    shaders[2] = LoadShader(0, "raylib/shaders/bloom.fs");
-    shaders[3] = LoadShader(0, "raylib/shaders/blur.fs");
-    shaders[4] = LoadShader(0, "raylib/shaders/dream_vision.fs");
-    shaders[5] = LoadShader(0, "raylib/shaders/sobel.fs");
+    shaders[0] = LoadShader(0, "shaders/posterization.fs");
+    shaders[1] = LoadShader(0, "shaders/grayscale.fs");
+    shaders[2] = LoadShader(0, "shaders/bloom.fs");
+    shaders[3] = LoadShader(0, "shaders/blur.fs");
+    shaders[4] = LoadShader(0, "shaders/dream_vision.fs");
+    shaders[5] = LoadShader(0, "shaders/sobel.fs");
 
     currentShader = 0;
     shaderCount = 6;
 
-    fxaaShader = LoadShader(0, "raylib/shaders/fxaa.fs");
+    fxaaShader = LoadShader(0, "shaders/fxaa.fs");
     resLoc = GetShaderLocation(fxaaShader, "resolution");
 
     walls =
